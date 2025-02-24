@@ -1,0 +1,11 @@
+[run]
+omit =
+    */__init__.py
+    */migrations/*
+    */manage.py
+    */wsgi.py
+    */asgi.py
+    */commands/*
+
+[report]
+fail_under = 100
