@@ -1,7 +1,5 @@
 from http import HTTPStatus
 
-import pytest
-
 from exam.models import Exam
 
 

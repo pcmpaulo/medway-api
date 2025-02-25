@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from exam.models import Exam, Answers
+from exam.models import Exam, Answer
 
 from question.utils import AlternativesChoices
 
@@ -11,19 +11,11 @@ class ExamSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'questions']
 
 
-class AnswersSerializer(serializers.ModelSerializer):
+class AnswerSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Answers
-        fields = ['id', 'question', 'answer', 'student', 'created']
+        model = Answer
+        fields = ['id', 'exam_question', 'alternative', 'student', 'created']
 
-
-class AnswerResponse(serializers.BaseSerializer):
-    number = serializers.IntegerField()
+class CreateAnswersSerializer(serializers.Serializer):
+    question_number = serializers.IntegerField(required=True)
     alternative = serializers.ChoiceField(choices=AlternativesChoices)
-
-
-class AnswersRequestSerializer(serializers.BaseSerializer):
-    student = serializers.CharField(max_length=32)
-    exam = serializers.CharField(max_length=32)
-    answers = AnswerResponse(many=True)
-

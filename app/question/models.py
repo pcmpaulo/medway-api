@@ -6,7 +6,7 @@ from .utils import AlternativesChoices
 class Question(models.Model):
     content = models.TextField()
 
-    def __str__(self):
+    def __str__(self):  # pragma: no cover
         return self.content
 
 

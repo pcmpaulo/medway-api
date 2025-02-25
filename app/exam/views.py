@@ -1,10 +1,13 @@
-from drf_yasg.utils import swagger_auto_schema
+from http import HTTPStatus
+
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import viewsets, mixins
+from rest_framework.response import Response
 
-from exam.models import Exam, Answers
-from exam.serializers import ExamSerializer, AnswersSerializer
+from exam.models import Exam, Answer
+from exam.serializers import AnswerSerializer, ExamSerializer, CreateAnswersSerializer
 
-from exam.serializers import AnswersRequestSerializer
+from exam.services import AnswersService
 
 
 class ExamViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.ListModelMixin):
@@ -12,10 +15,26 @@ class ExamViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.Lis
     serializer_class = ExamSerializer
 
 
-class AnswersViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin):
-    queryset = Answers.objects.all().order_by('-created')
-    serializer_class = AnswersSerializer
+class AnswerViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.CreateModelMixin):
+    queryset = Answer.objects.all().order_by('-created')
+    serializer_class = AnswerSerializer
 
-    @swagger_auto_schema(request_body=AnswersRequestSerializer)
     def create(self, request, *args, **kwargs):
-        return
+        try:
+            if not request.data.get('answers'):
+                return Response({'error': 'Need to have at least one Answer'}, status=HTTPStatus.NOT_FOUND.value)
+            answers_serializer = CreateAnswersSerializer(data=request.data.get('answers'), many=True)
+            answers_serializer.is_valid(raise_exception=True)
+
+            answers = AnswersService().save_answers(
+                student_id=request.data.get('student'),
+                exam_id=request.data.get('exam'),
+                answers_data=answers_serializer.validated_data
+            )
+            return Response(AnswerSerializer(answers, many=True).data, status=HTTPStatus.CREATED.value)
+        except ObjectDoesNotExist as error:
+            if 'Student' in str(error):
+                return Response({'error': 'Student not found'}, status=HTTPStatus.NOT_FOUND.value)
+            elif 'Exam' in str(error):
+                return Response({'error': 'Exam not found'}, status=HTTPStatus.NOT_FOUND.value)
+
