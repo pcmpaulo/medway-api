@@ -2,6 +2,7 @@ from http import HTTPStatus
 
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import viewsets, mixins
+from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
 from exam.models import Exam, Answer
@@ -22,7 +23,8 @@ class AnswerViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.Creat
     def create(self, request, *args, **kwargs):
         try:
             if not request.data.get('answers'):
-                return Response({'error': 'Need to have at least one Answer'}, status=HTTPStatus.NOT_FOUND.value)
+                return Response({'error': 'Need to have at least one Answer'}, status=HTTPStatus.BAD_REQUEST.value)
+
             answers_serializer = CreateAnswersSerializer(data=request.data.get('answers'), many=True)
             answers_serializer.is_valid(raise_exception=True)
 
@@ -34,7 +36,8 @@ class AnswerViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.Creat
             return Response(AnswerSerializer(answers, many=True).data, status=HTTPStatus.CREATED.value)
         except ObjectDoesNotExist as error:
             if 'Student' in str(error):
-                return Response({'error': 'Student not found'}, status=HTTPStatus.NOT_FOUND.value)
+                return Response({'error': 'Student not found'}, status=HTTPStatus.BAD_REQUEST.value)
             elif 'Exam' in str(error):
-                return Response({'error': 'Exam not found'}, status=HTTPStatus.NOT_FOUND.value)
-
+                return Response({'error': 'Exam not found'}, status=HTTPStatus.BAD_REQUEST.value)
+        except ValidationError as error:
+            return Response({'error': error.detail}, status=HTTPStatus.BAD_REQUEST.value)
