@@ -121,6 +121,7 @@ def test_should_not_create_answers_due_invalid_answers(base_client, student, ful
     assert 'This field is required.' in response_data.get('error')[0].get('question_number')
     assert response.status_code == HTTPStatus.BAD_REQUEST.value
 
+
 def test_should_not_create_answers_due_question_not_found(base_client, student, full_exam):
     # GIVEN
     request_data = {

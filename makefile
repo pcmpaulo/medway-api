@@ -11,6 +11,12 @@ install-dependencies:
 run-dev:
 	 ENVIRONMENT=.env python app/manage.py runserver
 
+run-prod:
+	docker compose up --build
+
+access-docker-bash:
+	docker exec -it medway-api bash
+
 start-database:
 	docker compose up --detach db
 
