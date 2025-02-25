@@ -33,3 +33,8 @@ class Answer(models.Model):
     alternative = models.ForeignKey(Alternative, on_delete=models.CASCADE)
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     created = models.DateTimeField(auto_created=True, auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['exam_question', 'student'], name='unique_question_by_student')
+        ]

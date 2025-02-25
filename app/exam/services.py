@@ -4,8 +4,6 @@ from question.models import Alternative
 
 from question.utils import AlternativesChoices
 
-from exam.serializers import AnswerSerializer
-
 
 class AnswersService:
 
@@ -31,7 +29,9 @@ class AnswersService:
                 student=student
             ))
 
-        return Answer.objects.bulk_create(answers)
+        return Answer.objects.bulk_create(
+            answers, update_conflicts=True, unique_fields=['exam_question', 'student'], update_fields=['alternative']
+        )
 
     @staticmethod
     def _get_exam_question(exam: Exam, question_number: int) -> ExamQuestion:

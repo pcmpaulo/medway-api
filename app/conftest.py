@@ -1,5 +1,6 @@
 import pytest
 
+from app.exam.services import AnswersService
 from question.models import Question, Alternative
 from question.utils import AlternativesChoices
 from student.models import Student
@@ -22,7 +23,7 @@ def exam():
 
 
 @pytest.fixture
-def create_full_exam(exam):
+def full_exam(exam):
     alternatives = []
     alternatives_data = [
         {'alternative': AlternativesChoices.A.value, 'content': 'Pulmões', 'is_correct': False},
@@ -61,3 +62,18 @@ def student():
     )
     student.save()
     return student
+
+@pytest.fixture
+def answers(full_exam, student):
+    answers_data = []
+    for exam_question in full_exam.examquestion_set.all():
+        answers_data.append({
+            'question_number': exam_question.number,
+            'alternative': exam_question.question.alternatives.first().option
+        })
+
+    AnswersService().save_answers(student_id=student.id, exam_id=full_exam.id, answers_data=answers_data)
+    return {
+        'student': student,
+        'exam': full_exam
+    }
